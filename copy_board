@@ -7,3 +7,69 @@ ax2 = fig.add_subplot(1,2,2)
 sns.kdeplot(df_S991_ALL_C.value,cumulative=True,label="S991_ALL_C",color="r",ax=ax2)
 sns.kdeplot(df_S998.value,cumulative=True,label="S998",color="b",ax=ax2)
 ax2 set title(label='cumulative' loc='center')
+
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif']='SimHei'#设置中文显示
+
+import seaborn as sns
+sns.set(style="whitegrid",palette="muted", color_codes=True)
+
+#为了在jupyter notebook里作图，需要用到这个命令
+%matplotlib inline   
+
+from sqlalchemy import create_engine
+from urllib import quote_plus as urlquote
+
+import traceback
+import warnings
+warnings.filterwarnings('ignore')
+
+pd.set_option('max_columns',1000)
+pd.set_option('max_row',300)
+pd.set_option('display.float_format', lambda x: '%.5f' % x)
+
+
+
+def get_sql(sql,engine):
+    df = pd.read_sql(sql=sql,con = engine)
+    print df.shape
+    print df.columns
+    return df
+    
+    
+sql = '''
+SELECT t1.`COMPANY_ID`
+      ,t1.`ORDER_ID`
+      ,DATE(t1.created_stamp) AS date
+      ,DATE_FORMAT(t1.created_stamp,'%%Y-%%m') as yymm
+      ,MONTH(DATE(t1.created_stamp)) as month
+      ,YEAR(DATE(t1.created_stamp)) as year
+      ,sum(t2.`ACTUAL_CURRENCY_AMOUNT`) as amount
+FROM ofbiz.order_header t1
+JOIN ofbiz.order_payment t2
+ON t1.ORDER_ID = t2.ORDER_ID
+JOIN ec_admin.PARTY_GROUP_GEO t3
+ON t1.company_id = t3.party_id
+LEFT JOIN ec_admin.party_group t4
+ON t1.company_id = t4.id
+WHERE t2.actual_currency_amount >= 0.01
+AND t2.actual_currency_amount<=6000000
+AND t1.company_id NOT IN ("ZDQL7blRgcYkehvzLJx","qV80ZU26BkEvQCjNeyG","PQVDbTECtqtL9RU3LM1","ojqQZRmNiaXqwaxQpnL",
+"lKe1gf5KsQF2Qvr7lqa","k48dr6BDLfB1kk65HZl","4UT4HuPaG2MZPa440GU")
+AND t1.product_store_id NOT IN ("XMHYSX01","TSJWL001","GZCDSX01","GZBSSX01","GZLRH001")
+AND t1.created_stamp >= "2018-01-01"
+AND t1.created_stamp <= "2019-12-31"
+AND t1.status_id IN ("ORDER_APPROVED","ORDER_COMPLETED") 
+group by t1.`COMPANY_ID`
+,t1.`ORDER_ID`
+,DATE(t1.created_stamp)
+,DATE_FORMAT(t1.created_stamp,'%%Y-%%m')
+,MONTH(DATE(t1.created_stamp))
+,YEAR(DATE(t1.created_stamp)) 
+'''
+order = get_sql(sql,engine)
