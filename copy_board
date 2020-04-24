@@ -73,3 +73,32 @@ group by t1.`COMPANY_ID`
 ,YEAR(DATE(t1.created_stamp)) 
 '''
 order = get_sql(sql,engine)
+
+
+
+
+
+
+select cai.`cf_apply_no`,cai.`cust_name` AS "维修厂名称",
+       cxemr.`ett_mem_code` AS "维修厂代码",
+       CASE lbi.`fclt_code` WHEN 'PRODA05XIMU239557065838694400C' THEN "白条" WHEN 'PRODA05XIMU239619100458881024C' THEN "挂账" ELSE "" END AS "授信方式",
+cai.`gds_acard_score` AS "初始A卡分",
+
+crrx.`cf_amount` AS "模型给予额度",
+crrx.`gds_desc` AS "模型给予额度描述",
+lbi.cust_la AS "当前固定额度",
+lbi.la_temp AS "当前临时额度",
+bcard_score_tmp.bcard_score AS "B卡分数",
+apply_count_tmp.apply_count AS "临额申请次数"
+from `cf_apply_info` cai 
+INNER JOIN `cust_xm_ett_mem_rel` cxemr ON cai.`mem_code`= cxemr.`xm_mem_code`
+INNER JOIN `la_base_info` lbi ON lbi.`cf_apply_id`= cai.`id` and lbi.`fclt_code` = cai.`fclt_code` 
+left JOIN (select * from (SELECT * FROM `cf_gds_result_record_ximu` order by `cr_date` asc) gds_tmp group by gds_tmp.cf_apply_no) crrx on crrx.`cf_apply_id` = cai.`id` 
+left join (
+select cust_code,GROUP_CONCAT(bcard_score) as bcard_score  from (
+select  cust_code,bcard_score  from `dsbs_apply_info` dai where bcard_score is not null group by cust_code,bcard_score ORDER BY bcard_score asc
+) tmp group by tmp.cust_code) bcard_score_tmp on bcard_score_tmp.cust_code = cai.`cust_code` 
+left join (SELECT lbi.*,count(lacl.`id`) as apply_count FROM la_base_info lbi left join `la_amount_change_log` lacl on lacl.`la_id` = lbi.id  
+           WHERE change_type in('ADD_TEMP','TEMP_EXPR') group by lbi.`cust_code`, lbi.`cf_apply_id` ,lbi.`fclt_code` ) apply_count_tmp on apply_count_tmp.cf_apply_id=lbi.`cf_apply_id` and apply_count_tmp.fclt_code=cai.`fclt_code` 
+where cai.`delete_flag` = 0
+order by cai.`cust_code` , cai.`fclt_code` 
