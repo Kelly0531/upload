@@ -102,3 +102,33 @@ left join (SELECT lbi.*,count(lacl.`id`) as apply_count FROM la_base_info lbi le
            WHERE change_type in('ADD_TEMP','TEMP_EXPR') group by lbi.`cust_code`, lbi.`cf_apply_id` ,lbi.`fclt_code` ) apply_count_tmp on apply_count_tmp.cf_apply_id=lbi.`cf_apply_id` and apply_count_tmp.fclt_code=cai.`fclt_code` 
 where cai.`delete_flag` = 0
 order by cai.`cust_code` , cai.`fclt_code` 
+
+# 授信额度
+sql1 = """SELECT la_id,t1.cust_id,change_type,lat,cr_date,fclt_name FROM la_amount_change_log t0 
+                        LEFT JOIN (SELECT id, cust_id,fclt_code FROM la_base_info)t1 ON t0.la_id = t1.id
+                        LEFT JOIN (SELECT fclt_code,fclt_name FROM fclt_base_info)t2 ON t1.fclt_code=t2.fclt_code
+                        WHERE change_type = 'ADD'"""
+# 解冻
+sql2 = """SELECT la_id,laf,submit_time,cust_id,fclt_name FROM la_unfreeze_record t0 
+                        LEFT JOIN (SELECT id, cust_id,fclt_code FROM la_base_info)t1 ON t0.la_id = t1.id
+                        LEFT JOIN (SELECT fclt_code,fclt_name FROM fclt_base_info)t2 ON t1.fclt_code=t2.fclt_code"""
+# 临额
+sql3 = """SELECT la_id,la_temp,la_temp_resource,submit_time,cust_id,fclt_name FROM la_temporary_record t0 
+                        LEFT JOIN (SELECT id, cust_id,fclt_code FROM la_base_info)t1 ON t0.la_id = t1.id
+                        LEFT JOIN (SELECT fclt_code,fclt_name FROM fclt_base_info)t2 ON t1.fclt_code=t2.fclt_code"""
+# 冻额
+sql4 = """SELECT la_id,laf,approve_time,cust_id,fclt_name FROM la_freeze_record t0 
+                        LEFT JOIN (SELECT id, cust_id,fclt_code FROM la_base_info)t1 ON t0.la_id = t1.id
+                        LEFT JOIN (SELECT fclt_code,fclt_name FROM fclt_base_info)t2 ON t1.fclt_code=t2.fclt_code"""
+# 固额
+sql5 = """SELECT la_id,change_fixed_la,la_resource,approve_time,cust_id,fclt_name FROM la_fixed_change_record t0 
+                        LEFT JOIN (SELECT id, cust_id,fclt_code FROM la_base_info)t1 ON t0.la_id = t1.id
+                        LEFT JOIN (SELECT fclt_code,fclt_name FROM fclt_base_info)t2 ON t1.fclt_code=t2.fclt_code"""
+
+
+
+
+
+
+
+
