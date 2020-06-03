@@ -1,0 +1,14 @@
+def valuation(df):
+    valuation =pd.DataFrame(columns=('f051_cut','s991_cut','over_cnt','over_pct','default_label','default_cnt','default_rate'))
+    default_label = ['default_1_0','default_1_3','default_1_10']
+
+    for i in sorted(df.f051.drop_duplicates().tolist()):
+        for j in range(700,950):
+            for k in default_label:
+                dfr = default_rate_cum(df[df.f051 == i],j,k)
+                # print(dfr)
+                try:
+                    valuation = valuation.append({"f051_cut":i,"s991_cut":dfr[0],"over_cnt":dfr[1],"over_pct":dfr[2],"default_label":dfr[3],"default_cnt":dfr[4],"default_rate":dfr[5]},ignore_index=True)
+                except:
+                    continue
+    return valuation
