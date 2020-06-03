@@ -1,3 +1,39 @@
+# -*- coding: utf-8 -*-
+os.chdir(r"/home/jiangxiaoqian")
+# os.getcwd()
+
+import numpy as np
+import pandas as pd
+
+-- from pandas.io.json import json_normalize
+-- import json
+
+import os
+import datetime
+import time
+
+import matplotlib as mpl
+mpl.rcParams['font.sans-serif'] = ['KaiTi']
+mpl.rcParams['font.serif'] = ['KaiTi']
+import matplotlib.pyplot as plt
+zhfont1 = mpl.font_manager.FontProperties(fname='msyh.ttf')
+
+import seaborn as sns
+sns.set(style="whitegrid", palette="muted", c
+from odps.inter import setup
+
+olor_codes=True)   
+
+from odps.inter import enter
+room = enter()
+o = room.odps
+
+import traceback
+import warnings
+warnings.filterwarnings('ignore')
+#------------------------------------------------------------------------------------------------#
+
+
 fig = plt.figure(facecolor='white',figsize=(20,5))
 ax1 = fig.add_subplot(1,2,1)
 sns.distplot(df_S991_ALL_C.value,kde_kws={"label":"S991_ALL_C"},color="r",ax=ax1)
