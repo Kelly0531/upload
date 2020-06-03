@@ -1,0 +1,50 @@
+Zepplin Connect
+from odps.inter import enter
+from odps.inter import setup
+room = enter()
+o = room.odps
+
+Local Jupyter Connect
+from odps import ODPS
+o = ODPS(access_id="LTAIzzPZLTszbygr",
+         secret_access_key="5ZOzHa5iNMWBouSLnQHWtdfFVjoWcW",
+         project="cashbus_etl",
+         endpoint='http://service.cn.maxcompute.aliyun.com/api',
+         tunnel_endpoint='http://dt.cn-beijing.maxcompute.aliyun.com')
+
+# run
+print("1. run tmp_collection_contact_call : " + str(datetime.datetime.now()))
+sql_list = sql_list.split(';')[:-1]
+sql_list = [x.replace('\n', ' ') if '\n' in x else x for x in sql_list]
+for x in sql_list:
+    print(sql_list.index(x))
+    o.execute_sql(x)
+
+# check
+print("2. check tmp_collection_contact_call z: " + str(datetime.datetime.now()))
+with o.execute_sql(sql.replace('\n', ' ')).open_reader(limit_enabled=False) as reader:
+    check = reader.to_pandas()
+print(check)
+
+# write
+print("3. write data: "+ str(datetime.datetime.now()))
+with o.execute_sql("select * from tmp_collection_contact_call").open_reader(limit_enabled=False) as reader:
+    df = reader.to_pandas()
+
+# end
+print("3. data clean finished: "+ str(datetime.datetime.now()))
+
+# upload table from zeppelin to odps #
+from odps.df import DataFrame as ODPS_DataFrame
+
+#df是要上传的python的dataframe，tmp_rollrate_tier是上传到odps里的表名
+tmp_rollrate_tier = df
+odps_df = ODPS_DataFrame(tmp_rollrate_tier)
+
+print('inserting table ----')
+
+odps_df.persist('tmp_rollrate_tier', odps=o)
+
+print('... finished')
+
+print('now table exist in odps:', o.exist_table('tmp_rollrate_tier'))
